@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
 using RedisData;
+using NBPChessServer.DataManagers;
 
 namespace NBPChessServer.Controllers
 {
@@ -46,21 +47,25 @@ namespace NBPChessServer.Controllers
         [HttpPost("Register")]
         public ActionResult Register([FromBody] JObject data)
         {
-            
             string username = data["username"].ToString();
             string password = data["password"].ToString();
-            PlayerValidationResult result =  PlayerCreator.RegisterPlayer(username, password);
-            return PlayerResponseData.CreateResponseData(result, "Registration successful").GetActionResult();
+            PlayerValidationResult result =  PlayerManager.RegisterPlayer(username, password);
+            string jwtToken = null;
+            if (result.validationStatus == ValidationStatus.Valid)
+            {
+                jwtToken = GenerateJSONWebToken(result.player.ID, result.player.GetUsername());
+            }
+            return PlayerResponseData.CreateResponseData(result, "Registration successful", jwtToken).GetActionResult();
         }
         // POST: api/Player/Login
         [AllowAnonymous]
         [HttpPost("Login")]
         public ActionResult Login([FromBody] JObject data)
         {
-            `string username = data["username"].ToString();
+            string username = data["username"].ToString();
             string password = data["password"].ToString();
             
-            PlayerValidationResult result = PlayerCreator.LoginPlayer(username, password);
+            PlayerValidationResult result = PlayerManager.LoginPlayer(username, password);
             string jwtToken = null;
             if (result.validationStatus == ValidationStatus.Valid)
             {
@@ -73,7 +78,7 @@ namespace NBPChessServer.Controllers
         [Authorize]
         public ActionResult ActiveGames()
         {
-            Player player = GetLoggedInPlayer();
+            Player player = GetLoggedInPlayer(HttpContext);
             player.LoadGames(true, false);
 
             return PlayerResponseData.CreateResponseData(player, "Active Games Fetched Successfuly").GetActionResult();
@@ -83,7 +88,7 @@ namespace NBPChessServer.Controllers
         [Authorize]
         public ActionResult FinishedGames()
         {
-            Player player = GetLoggedInPlayer();
+            Player player = GetLoggedInPlayer(HttpContext);
             player.LoadGames(false, true);
 
             return PlayerResponseData.CreateResponseData(player, "Finished Games Fetched Successfuly").GetActionResult();
@@ -93,7 +98,7 @@ namespace NBPChessServer.Controllers
         [Authorize]
         public ActionResult AllData()
         {
-            Player player = GetLoggedInPlayer();
+            Player player = GetLoggedInPlayer(HttpContext);
             player.GetUsername();
             player.LoadGames(true, true);
 
@@ -130,16 +135,16 @@ namespace NBPChessServer.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private Player GetLoggedInPlayer()
+        public static Player GetLoggedInPlayer(HttpContext httpContext)
         {
-            var currentUser = HttpContext.User;
+            var currentUser = httpContext.User;
             Claim claim = currentUser.Claims.FirstOrDefault(c => c.Type == playerIDClaimKey);
             if (claim == null)
             {
                 throw new Exception("User doesn't have ID claim");
             }
             int playerID = int.Parse(claim.Value);
-            Player player = PlayerCreator.GetPlayer(playerID);
+            Player player = PlayerManager.GetPlayer(playerID);
             return player;
         }
     }

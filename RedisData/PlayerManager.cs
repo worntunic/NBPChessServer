@@ -5,7 +5,7 @@ using System.Text;
 
 namespace RedisData
 {
-    public static class PlayerCreator
+    public static class PlayerManager
     {
         private const string loginList = "nbpc:logindata:";
         private const string idKey = "id";
@@ -94,9 +94,9 @@ namespace RedisData
             { ValidationStatus.PlayerAlreadyExists,
                 $"Player with this username already exists" },
             { ValidationStatus.UsernameTooShort,
-                $"This username is too short, it should be minimum {PlayerCreator.minUsernameLength} characters long." },
+                $"This username is too short, it should be minimum {PlayerManager.minUsernameLength} characters long." },
             { ValidationStatus.UsernameTooShort,
-                $"This password is too short, it should be minimum {PlayerCreator.minPasswordLength} characters long." },
+                $"This password is too short, it should be minimum {PlayerManager.minPasswordLength} characters long." },
             { ValidationStatus.Valid, $"Valid player"}
         };
         public Player player;

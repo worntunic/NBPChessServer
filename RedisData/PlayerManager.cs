@@ -75,7 +75,7 @@ namespace RedisData
 
         private static bool IsPasswordValid(string password)
         {
-            return !String.IsNullOrEmpty(password) && password.Length >= 7;
+            return !String.IsNullOrEmpty(password) && password.Length >= minPasswordLength;
         }
     }
 
@@ -95,7 +95,7 @@ namespace RedisData
                 $"Player with this username already exists" },
             { ValidationStatus.UsernameTooShort,
                 $"This username is too short, it should be minimum {PlayerManager.minUsernameLength} characters long." },
-            { ValidationStatus.UsernameTooShort,
+            { ValidationStatus.PasswordTooShort,
                 $"This password is too short, it should be minimum {PlayerManager.minPasswordLength} characters long." },
             { ValidationStatus.Valid, $"Valid player"}
         };

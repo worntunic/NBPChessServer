@@ -7,6 +7,26 @@ using System.Runtime.Serialization;
 
 namespace RedisData
 {
+    public struct PlayerGameInfo
+    {
+        public int gameID;
+        public PlayerInfo opponent;
+        public ChessGame.GameState gameState;
+        public int currentTimeLeft;
+    }
+    public struct PlayerInfo
+    {
+        public int id;
+        public string username;
+        public int rank;
+
+        public PlayerInfo(Player player)
+        {
+            this.id = player.ID;
+            this.username = player.GetUsername();
+            this.rank = player.GetRank();
+        }
+    }
     public class Player
     {
         private readonly RedisClient redis = new RedisClient(Config.SingleHost);
@@ -26,8 +46,8 @@ namespace RedisData
         public int ID { get; private set; }
         private string username;
         private int rank;
-        private List<int> activeGames;
-        private List<int> finishedGames;
+        private List<PlayerGameInfo> activeGames;
+        private List<PlayerGameInfo> finishedGames;
 
 
         public Player()
@@ -75,13 +95,31 @@ namespace RedisData
             if (loadActive)
             {
                 loadedActiveGames = true;
-                activeGames = redis.GetAllItemsFromList(activeGamesKey).Cast<int>().ToList();
+                activeGames = redis.GetAllItemsFromList(activeGamesKey).Select(int.Parse).Select(ParseGameInfo).ToList();
             }
             if (loadFinished)
             {
                 loadedFinishedGames = true;
-                finishedGames = redis.GetAllItemsFromList(finishedGamesKey).Cast<int>().ToList();
+                finishedGames = redis.GetAllItemsFromList(finishedGamesKey).Select(int.Parse).Select(ParseGameInfo).ToList();
             }
+        }
+        private PlayerGameInfo ParseGameInfo(int gameID)
+        {
+            ChessGame game = new ChessGame(gameID);
+            PlayerGameInfo gameInfo = new PlayerGameInfo();
+            gameInfo.gameID = game.ID;
+            Player opponent;
+            bool curPlayerWhite = false;
+            opponent = game.GetWhitePlayer();
+            if (opponent.ID == this.ID)
+            {
+                opponent = game.GetBlackPlayer();
+                curPlayerWhite = true;
+            }
+            gameInfo.opponent = new PlayerInfo(opponent);
+            gameInfo.gameState = game.GetGameState();
+            gameInfo.currentTimeLeft = (curPlayerWhite) ? game.GetWhiteActualTimeLeft() : game.GetBlackActualTimeLeft();
+            return gameInfo;
         }
         //Changing data
         public void SetUsername(string username)
@@ -120,7 +158,7 @@ namespace RedisData
                 LoadGames(true, false);
             } else
             {
-                activeGames.Add(gameID);
+                activeGames.Add(ParseGameInfo(gameID));
             }
         }
 
@@ -132,7 +170,7 @@ namespace RedisData
                 LoadGames(false, true);
             } else
             {
-                finishedGames.Add(gameID);
+                finishedGames.Add(ParseGameInfo(gameID));
             }
             redis.RemoveItemFromList(activeGamesKey, gameID.ToString());
             if (!loadedActiveGames)
@@ -140,7 +178,7 @@ namespace RedisData
                 LoadGames(true, false);
             } else
             {
-                activeGames.Remove(gameID);
+                activeGames.RemoveAll(game => game.gameID == gameID);
             }
         }
 
@@ -161,7 +199,7 @@ namespace RedisData
             }
             return rank;
         }
-        public List<int> GetActiveGames()
+        public List<PlayerGameInfo> GetActiveGames()
         {
             if (!loadedActiveGames)
             {
@@ -169,7 +207,7 @@ namespace RedisData
             }
             return activeGames;
         }
-        public List<int> GetFinishedGames()
+        public List<PlayerGameInfo> GetFinishedGames()
         {
             if (!loadedFinishedGames)
             {

@@ -23,7 +23,7 @@ namespace NBPChessServer.DataManagers
 
         public PlayerResponseData(int code, string message, Player player) : base(code, message)
         {
-            if (data != null)
+            if (player != null)
             {
                 keyValueData.Add(playerKey, GetPlayerData(player));
             }

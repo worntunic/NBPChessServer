@@ -15,16 +15,33 @@ namespace NBPChessServer.Controllers
     [ApiController]
     public class GameController : ControllerBase
     {
+        private const int SearchSleepTime = 1000, SearchTryNumber = 5;
         // POST: api/Game
         [Authorize]
         [HttpPost("Find")]
         public ActionResult FindGame()
         {
-            Player player = PlayerController.GetLoggedInPlayer(HttpContext);
-            ChessGameManager gameManager = new ChessGameManager(player);
-            ChessGameValidationResult validationResult = gameManager.FindGame();
+            ChessGameValidationResult validationResult = FindGameForContext(HttpContext);
+            for (int i = 0; i < SearchTryNumber; ++i)
+            {
+                if (validationResult.status == ChessGameValidationStatus.Searching)
+                {
+                    System.Threading.Thread.Sleep(SearchSleepTime);
+                    validationResult = FindGameForContext(HttpContext);
+                } else
+                {
+                    break;
+                }
+            }
             GameResponseData responseData = GameResponseData.CreateResponseData(validationResult);
             return responseData.GetActionResult();
+        }
+        private ChessGameValidationResult FindGameForContext(HttpContext httpContext)
+        {
+            Player player = PlayerController.GetLoggedInPlayer(httpContext);
+            ChessGameManager gameManager = new ChessGameManager(player);
+            ChessGameValidationResult validationResult = gameManager.FindGame();
+            return validationResult;
         }
 
         // POST: api/Game/AllInfo

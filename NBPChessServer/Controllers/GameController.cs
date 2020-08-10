@@ -47,7 +47,7 @@ namespace NBPChessServer.Controllers
         // POST: api/Game/AllInfo
         [Authorize]
         [HttpPost("AllInfo")]
-        public ActionResult FindGame([FromBody] JObject jsonData)
+        public ActionResult GetGameInfo([FromBody] JObject jsonData)
         {
             int gameID = int.Parse(jsonData["gameid"].ToString());
             ChessGame game = new ChessGame(gameID);
@@ -65,6 +65,44 @@ namespace NBPChessServer.Controllers
             Player player = PlayerController.GetLoggedInPlayer(HttpContext);
             ChessGame game = new ChessGame(gameID);
             game.PlayMove(player.ID, move, newGameState);
+            GameResponseData gameResponse = GameResponseData.CreateFoundResponseData(game);
+            return gameResponse.GetActionResult();
+        }
+        [Authorize]
+        [HttpPost("WaitForGameState")]
+        public ActionResult WaitForGameState([FromBody] JObject jsonData)
+        {
+            int gameID = int.Parse(jsonData["gameid"].ToString());
+            Player player = PlayerController.GetLoggedInPlayer(HttpContext);
+
+            ChessGame game = new ChessGame(gameID);
+            ChessGame.GameState existingState;
+            if (player.ID == game.GetWhitePlayer().ID )
+            {
+                existingState = ChessGame.GameState.BlackMove;
+            } else if (player.ID == game.GetBlackPlayer().ID)
+            {
+                existingState = ChessGame.GameState.WhiteMove;
+            } else
+            {
+                ResponseData responseData = new ResponseData(400, "Invalid game for player");
+                return responseData.GetActionResult();
+            }
+            bool stateChanged = false;
+            for (int i = 0; i < SearchTryNumber; ++i)
+            {
+                if (game.GetGameState() == existingState)
+                {
+                    System.Threading.Thread.Sleep(SearchSleepTime);
+                    game.ReloadGameData();
+                }
+                else
+                {
+                    game.ReloadMoves();
+                    stateChanged = true;
+                    break;
+                }
+            }
             GameResponseData gameResponse = GameResponseData.CreateFoundResponseData(game);
             return gameResponse.GetActionResult();
         }

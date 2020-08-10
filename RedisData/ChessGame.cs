@@ -81,7 +81,11 @@ namespace RedisData
             };
             redis.SetRangeInHash(gameDataKey, dbData);
         }
-
+        public void ReloadGameData()
+        {
+            gameDataLoaded = false;
+            LoadGameData();
+        }
         private void LoadGameData()
         {
             if (!gameDataLoaded)
@@ -92,7 +96,11 @@ namespace RedisData
                 gameDataLoaded = true;
             }
         }
-
+        public void ReloadMoves()
+        {
+            movesLoaded = false;
+            LoadMoves();
+        }
         private void LoadMoves()
         {
             if (!movesLoaded)

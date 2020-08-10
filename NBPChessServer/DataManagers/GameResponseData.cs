@@ -13,7 +13,7 @@ namespace NBPChessServer.DataManagers
         private const string wTimeLeftKey = "wtimeleft", bTimeLeftKey = "btimeleft";
         private const string gameStateKey = "gamestate";
 
-        private const string gameKey = "game", gameDataKey = "gamedata", movesKey = "moves", gameFoundKey = "gamefound";
+        private const string gameKey = "game", gameDataKey = "gamedata", movesKey = "moves", gameFoundKey = "gamefound", stateChangedKey = "statechanged";
         private Dictionary<string, object> keyValueData = new Dictionary<string, object>();
 
         private const string foundMessage = "Success: Game Found", searchingMessage = "Still searching for a game";
@@ -35,6 +35,12 @@ namespace NBPChessServer.DataManagers
         {
             GameResponseData response = new GameResponseData(200, foundMessage, game);
             response.keyValueData.Add(gameFoundKey, true);
+            return response;
+        }
+        public static GameResponseData CreateGameChangedData(ChessGame game, bool stateChanged)
+        {
+            GameResponseData response = CreateFoundResponseData(game);
+            response.keyValueData.Add(stateChangedKey, stateChanged);
             return response;
         }
 

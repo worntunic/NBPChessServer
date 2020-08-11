@@ -148,14 +148,15 @@ namespace RedisData
             {
                 moves.Add(algMove);
             }
-
+            UpdateTimeAfterMove();
             SetDataEntry(gameStateKey, stateAfterMove.ToString());
+
             GameState newGameState = (GameState)stateAfterMove;
             if (newGameState == GameState.Tie || newGameState == GameState.WhiteWin || newGameState == GameState.BlackWin)
             {
                 FinishGame();
             }
-            UpdateTimeAfterMove();
+
         }
 
         private void FinishGame()
@@ -177,8 +178,8 @@ namespace RedisData
             expOutW = 1 / (1 + Math.Pow(10, ((realRankB - realRankW) / 400)));
             expOutB = 1 / (1 + Math.Pow(10, ((realRankW - realRankB) / 400)));
             //Round
-            expOutW = Math.Round(expOutW);
-            expOutB = Math.Round(expOutB);
+            expOutW = Math.Round(expOutW, 2);
+            expOutB = Math.Round(expOutB, 2);
             //Get game outcomes
             GameState gameState = GetGameState();
             if (gameState == GameState.WhiteWin)
@@ -227,13 +228,13 @@ namespace RedisData
         {
             if (GetGameState() == GameState.BlackMove)
             {
-                SetDataEntry(wTimeLeftLastMoveKey, GetWhiteActualTimeLeft().ToString());
-                SetDataEntry(wLastMoveDateKey, DateTime.UtcNow.ToString());
+                SetDataEntry(bTimeLeftLastMoveKey, GetBlackActualTimeLeft().ToString());
+                SetDataEntry(bLastMoveDateKey, DateTime.UtcNow.ToString());
             }
             else
             {
-                SetDataEntry(bTimeLeftLastMoveKey, GetBlackActualTimeLeft().ToString());
-                SetDataEntry(bLastMoveDateKey, DateTime.UtcNow.ToString());
+                SetDataEntry(wTimeLeftLastMoveKey, GetWhiteActualTimeLeft().ToString());
+                SetDataEntry(wLastMoveDateKey, DateTime.UtcNow.ToString());
             }
         }
         public GameState GetGameState()
@@ -274,7 +275,7 @@ namespace RedisData
             {
                 LoadGameData();
             }
-            return DateTimeOffset.Parse(gameData[wLastMoveDateKey]).UtcDateTime;
+            return DateTime.Parse(gameData[wLastMoveDateKey]);
         }
         public DateTime GetBlackLastMove()
         {
@@ -282,7 +283,7 @@ namespace RedisData
             {
                 LoadGameData();
             }
-            return DateTimeOffset.Parse(gameData[bLastMoveDateKey]).UtcDateTime;
+            return DateTime.Parse(gameData[bLastMoveDateKey]);
         }
         public int GetWhiteTimeLeftLastMove()
         {

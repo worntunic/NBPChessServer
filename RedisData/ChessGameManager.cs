@@ -13,7 +13,7 @@ namespace RedisData
         private const int RankScopeExpandPerCycle = 50;
         public const int StartingRankScope = 20;
         private const int GameNotFoundID = -1;
-        private const int GameTimeInSeconds = 24 * 60 * 60;
+        private const int GameTimeInSeconds = 1 * 60 * 60;
 
         private const string gameQueuePrefix = "nbpc:gamequeue:";
         private const string sortedRanksKey = gameQueuePrefix + "sortedranks";

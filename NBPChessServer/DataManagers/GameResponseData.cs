@@ -9,6 +9,8 @@ namespace NBPChessServer.DataManagers
     public class GameResponseData : ResponseData
     {
         private const string whitePlayerKey = "wplayer", blackPlayerKey = "bplayer";
+        private const string whitePlayerNameKey = "wplayername", blackPlayerNameKey = "bplayername";
+        private const string whitePlayerRankKey = "wplayerrank", blackPlayerRankKey = "bplayerrank";
         private const string gameIDKey = "id";
         private const string wTimeLeftKey = "wtimeleft", bTimeLeftKey = "btimeleft";
         private const string gameStateKey = "gamestate";
@@ -75,6 +77,10 @@ namespace NBPChessServer.DataManagers
                 Dictionary<string, object> gameInfoData = new Dictionary<string, object>();
                 gameInfoData.Add(whitePlayerKey, game.GetWhitePlayer().ID);
                 gameInfoData.Add(blackPlayerKey, game.GetBlackPlayer().ID);
+                gameInfoData.Add(whitePlayerNameKey, game.GetWhitePlayer().GetUsername());
+                gameInfoData.Add(blackPlayerNameKey, game.GetBlackPlayer().GetUsername());
+                gameInfoData.Add(whitePlayerRankKey, game.GetWhitePlayer().GetRank());
+                gameInfoData.Add(blackPlayerRankKey, game.GetBlackPlayer().GetRank());
                 gameInfoData.Add(wTimeLeftKey, game.GetWhiteActualTimeLeft());
                 gameInfoData.Add(bTimeLeftKey, game.GetBlackActualTimeLeft());
                 gameInfoData.Add(gameStateKey, ((int)game.GetGameState()));

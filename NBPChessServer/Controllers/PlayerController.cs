@@ -80,6 +80,7 @@ namespace NBPChessServer.Controllers
         {
             Player player = GetLoggedInPlayer(HttpContext);
             player.LoadGames(true, false);
+            player.GetRank();
 
             return PlayerResponseData.CreateResponseData(player, "Active Games Fetched Successfuly").GetActionResult();
         }
@@ -103,18 +104,6 @@ namespace NBPChessServer.Controllers
             player.LoadGames(true, true);
 
             return PlayerResponseData.CreateResponseData(player, "All Data Loaded Successfuly").GetActionResult();
-        }
-
-        // PUT: api/Player/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
 
         private string GenerateJSONWebToken(int playerID, string username)

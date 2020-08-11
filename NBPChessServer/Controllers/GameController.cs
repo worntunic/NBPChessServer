@@ -98,11 +98,12 @@ namespace NBPChessServer.Controllers
                 }
                 else
                 {
-                    game.ReloadMoves();
+                    //game.ReloadMoves();
                     stateChanged = true;
                     break;
                 }
             }
+            game.ReloadMoves();
             GameResponseData gameResponse = GameResponseData.CreateFoundResponseData(game);
             return gameResponse.GetActionResult();
         }
